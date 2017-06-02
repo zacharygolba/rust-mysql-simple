@@ -681,6 +681,18 @@ impl Row {
         })
     }
 
+    /// Will take value of a column with index `index` if it exists and wasn't taken earlier then
+    /// will converts it to `T`. Returns `None` if the value was taken earlier or was not able
+    /// to be converted to `T`.
+    pub fn take_opt<T, I>(&mut self, index: I) -> Option<T>
+    where T: FromValue,
+          I: ColumnIndex {
+        index.idx(&*self.columns)
+             .and_then(|idx| self.values.get_mut(idx))
+             .and_then(|x| x.take())
+             .and_then(|x| from_value_opt::<T>(x.clone()).ok())
+    }
+
     /// Unwraps values of a row.
     ///
     /// # Panics
